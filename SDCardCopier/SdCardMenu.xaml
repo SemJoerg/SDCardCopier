@@ -5,8 +5,62 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDCardCopier"
         mc:Ignorable="d"
-        Title="SdCardMenu" Height="450" Width="800" WindowStyle="ToolWindow" Closing="Window_Closing">
-    <Grid>
+        Title="SdCardMenu" Height="300" Width="500" MinWidth="500" MinHeight="300" WindowStyle="ToolWindow" Closing="Window_Closing">
+    <DockPanel LastChildFill="True">
+        <Grid DockPanel.Dock="Bottom" Margin="10,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="BtnSave" Grid.Column="0" Content="Save" Click="BtnSaveClick"/>
+            <Button Grid.Column="2" Background="Gray" Content="Cancel" Click="BtnCancelClick"/>
+        </Grid>
         
-    </Grid>
+        <Border DockPanel.Dock="Bottom" BorderThickness="2" BorderBrush="#003B65"/>
+        
+        <Grid VerticalAlignment="Center" Margin="0,0,5,0">
+            <Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="20"/>
+                    <Setter Property="Margin" Value="10"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+                <Style TargetType="TextBox">
+                    <Setter Property="FontSize" Value="15"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+            </Grid.Resources>
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Name"/>
+            <TextBlock Grid.Row="1" Text="Copy From"/>
+            <TextBlock Grid.Row="2" Text="Copy To"/>
+
+            <TextBox x:Name="TbName" Grid.Row="0" Grid.Column="2" TextChanged="TbNameTextChanged"/>
+
+            <Button Grid.Row="1" Grid.Column="3" Margin="2,0,0,0" Background="Transparent" BorderBrush="Transparent" Width="30" Height="30" Click="BtnCopyFromClick">
+                <Image Source="/icons/folder.png"/>
+            </Button>
+            <TextBox x:Name="TbCopyFrom" Grid.Row="1" Grid.Column="2" TextChanged="TbFolderTextChanged"/>
+
+            <Button Grid.Row="2" Grid.Column="3" Margin="2,0,0,0" Background="Transparent" BorderBrush="Transparent" Width="30" Height="30" Click="BtnCopyToClick">
+                <Image Source="/icons/folder.png"/>
+            </Button>
+            <TextBox x:Name="TbCopyTo" Grid.Row="2" Grid.Column="2" TextChanged="TbFolderTextChanged"/>
+            
+        </Grid>
+    </DockPanel>
 </Window>

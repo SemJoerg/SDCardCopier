@@ -7,11 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Settings.png" />
+    <None Remove="icons\folder.png" />
+    <None Remove="icons\settings.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Settings.png" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="icons\folder.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\settings.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

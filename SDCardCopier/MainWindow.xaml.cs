@@ -36,15 +36,15 @@ namespace SDCardCopier
 
         private void BtnAddClick(object sender, RoutedEventArgs e)
         {
-            SdCardManager.sdCards.Add(new SdCard(DateTime.Now, AppContext.BaseDirectory, AppContext.BaseDirectory));
-        }
-
-        private void BtnSettingsClick(object sender, RoutedEventArgs e)
-        {
             this.IsEnabled = false;
             SdCardMenu menu = new SdCardMenu();
             menu.Owner = this;
             menu.Show();
+        }
+
+        private void BtnSettingsClick(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }
