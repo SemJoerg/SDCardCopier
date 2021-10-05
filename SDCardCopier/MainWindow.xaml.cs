@@ -34,12 +34,34 @@ namespace SDCardCopier
             SdCardManager.Save();
         }
 
-        private void BtnAddClick(object sender, RoutedEventArgs e)
+        private void ShowSdCardWindow(SdCard sdCard = null)
         {
             this.IsEnabled = false;
-            SdCardMenu menu = new SdCardMenu();
+            SdCardMenu menu;
+            if(sdCard != null)
+            {
+                menu = new SdCardMenu(sdCard);
+            }
+            else
+            {
+                menu = new SdCardMenu();
+            }
+
             menu.Owner = this;
             menu.Show();
+        }
+
+        private void ItemEditClick(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            SdCard sdCard = button.DataContext as SdCard;
+            ShowSdCardWindow(sdCard);
+            SdCardManager.sdCards.
+        }
+
+        private void BtnAddClick(object sender, RoutedEventArgs e)
+        {
+            ShowSdCardWindow();
         }
 
         private void BtnSettingsClick(object sender, RoutedEventArgs e)

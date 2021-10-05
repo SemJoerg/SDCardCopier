@@ -10,6 +10,8 @@ namespace SDCardCopier
     [Serializable]
     public class SdCard
     {
+        public string Name { get; set; }
+        
         [XmlIgnore]
         public DateTime LastTimeOfCopy { get; private set; }
 
@@ -31,17 +33,15 @@ namespace SDCardCopier
             }
         }
 
-
         [XmlIgnore]
         public DirectoryInfo SdCardDirectory { get; private set; }
 
         [XmlElement("SdCardDirectory")]
-        public string SdCardPathString
+        public string SdCardDirectoryString
         {
             get { return SdCardDirectory.FullName; }
             set { SdCardDirectory = new DirectoryInfo(value); }
         }
-        
 
         [XmlIgnore]
         public DirectoryInfo CopyDirectory { get; private set; }
@@ -58,9 +58,10 @@ namespace SDCardCopier
 
         }
 
-        public SdCard(DateTime lastTimeOfCopy, string sdCardDirectory, string copyDirectory)
+        public SdCard(DateTime lastTimeOfCopy, string name, string sdCardDirectory, string copyDirectory)
         {
             LastTimeOfCopy = lastTimeOfCopy;
+            Name = name;
             SdCardDirectory = new DirectoryInfo(sdCardDirectory);
             CopyDirectory = new DirectoryInfo(copyDirectory);
         }

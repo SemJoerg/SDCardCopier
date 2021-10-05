@@ -19,9 +19,23 @@ namespace SDCardCopier
     /// </summary>
     public partial class SdCardMenu : Window
     {
+        private SdCard sdCard;
+        private bool createNewSdCard;
         public SdCardMenu()
         {
             InitializeComponent();
+            createNewSdCard = true;
+            CheckTextBoxes();
+        }
+
+        public SdCardMenu(SdCard _sdCard)
+        {
+            InitializeComponent();
+            createNewSdCard = false;
+            sdCard = _sdCard;
+            TbName.Text = sdCard.Name;
+            TbSdCardDirectory.Text = sdCard.CopyDirectoryString;
+            TbCopyDirectory.Text = sdCard.SdCardDirectoryString;
             CheckTextBoxes();
         }
 
@@ -32,8 +46,21 @@ namespace SDCardCopier
 
         private void BtnSaveClick(object sender, RoutedEventArgs e)
         {
-            SdCardManager.sdCards.Add(new SdCard(DateTime.Now, TbCopyFrom.Text, TbCopyTo.Text));
-            Close();
+            
+            if(createNewSdCard)
+            {
+                sdCard = new SdCard(DateTime.Now, TbName.Text, TbSdCardDirectory.Text, TbCopyDirectory.Text);
+                SdCardManager.sdCards.Add(sdCard);
+                Close();
+            }
+            else
+            {
+                sdCard.Name = TbName.Text;
+                sdCard.SdCardDirectoryString = TbSdCardDirectory.Text;
+                sdCard.CopyDirectoryString = TbCopyDirectory.Text;
+                Close();
+            }
+            
         }
 
         private void BtnCancelClick(object sender, RoutedEventArgs e)
@@ -43,12 +70,12 @@ namespace SDCardCopier
 
         private void BtnCopyFromClick(object sender, RoutedEventArgs e)
         {
-            OpenFolderDialog(TbCopyFrom, "Copy From");
+            OpenFolderDialog(TbSdCardDirectory, "Copy From");
         }
 
         private void BtnCopyToClick(object sender, RoutedEventArgs e)
         {
-            OpenFolderDialog(TbCopyTo, "Copy To");
+            OpenFolderDialog(TbCopyDirectory, "Copy To");
         }
 
         private void OpenFolderDialog(TextBox textBox, string name = "")
@@ -94,7 +121,7 @@ namespace SDCardCopier
 
         private void CheckTextBoxes()
         {
-            if(Directory.Exists(TbCopyFrom.Text) && Directory.Exists(TbCopyTo.Text) && !String.IsNullOrEmpty(TbName.Text))
+            if(Directory.Exists(TbSdCardDirectory.Text) && Directory.Exists(TbCopyDirectory.Text) && !String.IsNullOrEmpty(TbName.Text))
             {
                 BtnSave.IsEnabled = true;
             }
