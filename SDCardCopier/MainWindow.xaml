@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDCardCopier"
         mc:Ignorable="d"
-        Title="SDCardCopier" Height="450" Width="800" MinHeight="200" MinWidth="400" WindowStartupLocation="CenterScreen">
+        Title="SDCardCopier" Height="450" Width="800" MinHeight="200" MinWidth="400" WindowStartupLocation="CenterScreen" Closing="Window_Closing">
 
     <DockPanel LastChildFill="True">
         <Grid DockPanel.Dock="Top" Margin="10,2,10,2">
@@ -23,22 +23,49 @@
                     <DataTemplate>
                         <Border Margin="0, 0, 0, 5" Padding="5" BorderBrush="Gray" BorderThickness="1" CornerRadius="3" Background="Transparent">
                             <Grid>
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontSize" Value="15"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </Grid.Resources>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="5"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Button Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" 
-                                        Width="25" Height="25" Background="Transparent" Foreground="Black" Click="ItemEditClick">
-                                    E
-                                </Button>
-                                
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{Binding Path=Name, StringFormat=Name: {0}}"/>
-                                    <TextBlock Text="{Binding Path=SdCardDirectoryString, StringFormat=SD-Card-Directory: {0}}"/>
-                                    <TextBlock Text="{Binding Path=CopyDirectory, StringFormat=Copy-Directory: {0}}"/>
-                                    <TextBlock Text="{Binding Path=lastTimeOfCopyString, StringFormat=Last-Time-Of-Copy: {0}}"/>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Column="3" Grid.RowSpan="5" HorizontalAlignment="Right" VerticalAlignment="Top">
+
+                                    <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Foreground="Red" FontWeight="Bold" Content="X" Click="ItemDeleteClick" Margin="0,0,0,5"/>
+                                    <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Foreground="Black" Content="E" Click="ItemEditClick"/>
+                                    <CheckBox IsChecked="{Binding Path=SdCardIsConnected}" IsEnabled="False"/>
                                 </StackPanel>
+
+                                <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Path=Name}" FontSize="17" FontWeight="SemiBold"/>
+
+                                <TextBlock Grid.Column="0" Grid.Row="1" Text="SD-Card Directory" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Path=SdCardDirectory}"/>
+
+                                <TextBlock Grid.Column="0" Grid.Row="2" Text="Copy Directory" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Path=CopyDirectory}"/>
+
+                                <TextBlock Grid.Column="0" Grid.Row="3" Text="File Extensions" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding Path=FileExtensionsString}"/>
+
+                                <TextBlock Grid.Column="0" Grid.Row="4" Text="Last time of copy" FontSize="13" FontWeight="SemiBold" FontStyle="Italic"/>
+                                <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding Path=lastTimeOfCopyString}" FontSize="13" FontStyle="Italic"/>
+                                
+                                
                             </Grid>
                         </Border>
                     </DataTemplate>

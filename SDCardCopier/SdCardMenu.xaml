@@ -50,6 +50,7 @@
             <TextBlock Grid.Row="0" Text="Name"/>
             <TextBlock Grid.Row="1" Text="SD-Card Folder"/>
             <TextBlock Grid.Row="2" Text="Copy Directory"/>
+            <TextBlock Grid.Row="3" Text="File Extension"/>
 
             <TextBox x:Name="TbName" Grid.Row="0" Grid.Column="2" TextChanged="TbNameTextChanged"/>
 
@@ -62,7 +63,9 @@
                 <Image Source="/icons/folder.png"/>
             </Button>
             <TextBox x:Name="TbCopyDirectory" Grid.Row="2" Grid.Column="2" TextChanged="TbFolderTextChanged"/>
-            
+
+            <TextBox x:Name="TbFileExtension" Grid.Row="3" Grid.Column="2" TextChanged="TbFileExtensionTextChanged"/>
+
         </Grid>
     </DockPanel>
 </Window>

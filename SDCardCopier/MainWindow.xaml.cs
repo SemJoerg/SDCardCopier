@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,18 +22,20 @@ namespace SDCardCopier
     /// </summary>
     public partial class MainWindow : Window
     {
+        
         public MainWindow()
         {
             InitializeComponent();
-            SdCardManager.Load();
-            SdCardManager.sdCards.CollectionChanged += OnSDCardsChanged;
             sd_card_viewer.ItemsSource = SdCardManager.sdCards;
         }
 
-        private void OnSDCardsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
-            SdCardManager.Save();
+            e.Cancel = true;
+            (Application.Current as App).AppHidden = true;
         }
+
+        
 
         private void ShowSdCardWindow(SdCard sdCard = null)
         {
@@ -51,22 +54,37 @@ namespace SDCardCopier
             menu.Show();
         }
 
-        private void ItemEditClick(object sender, RoutedEventArgs e)
-        {
-            Button button = sender as Button;
-            SdCard sdCard = button.DataContext as SdCard;
-            ShowSdCardWindow(sdCard);
-            SdCardManager.sdCards.
-        }
-
         private void BtnAddClick(object sender, RoutedEventArgs e)
         {
             ShowSdCardWindow();
         }
 
+        private void ItemEditClick(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            SdCard sdCard = button.DataContext as SdCard;
+            ShowSdCardWindow(sdCard);
+        }
+
+        private void ItemDeleteClick(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            SdCard sdCard = button.DataContext as SdCard;
+            
+            MessageBoxResult result = MessageBox.Show(this, $"Do you want to delete \"{sdCard.Name}\"", "Delete" , MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if(result == MessageBoxResult.Yes)
+            {
+                SdCardManager.sdCards.Remove(sdCard);
+            }
+        }
+
+        
+
         private void BtnSettingsClick(object sender, RoutedEventArgs e)
         {
             
         }
+
     }
 }

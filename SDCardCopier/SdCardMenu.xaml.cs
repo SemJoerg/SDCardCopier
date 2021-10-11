@@ -21,6 +21,9 @@ namespace SDCardCopier
     {
         private SdCard sdCard;
         private bool createNewSdCard;
+        private bool fileExtinsionsCorrect = false;
+        List<string> fileExtensions = new List<string>();
+
         public SdCardMenu()
         {
             InitializeComponent();
@@ -34,8 +37,19 @@ namespace SDCardCopier
             createNewSdCard = false;
             sdCard = _sdCard;
             TbName.Text = sdCard.Name;
-            TbSdCardDirectory.Text = sdCard.CopyDirectoryString;
-            TbCopyDirectory.Text = sdCard.SdCardDirectoryString;
+            TbSdCardDirectory.Text = sdCard.SdCardDirectoryString;
+            TbCopyDirectory.Text = sdCard.CopyDirectoryString;
+            string tbFileExtensionOutput = "";
+            for(int i = 0; i < sdCard.FileExtensions.Count; i++)
+            {
+                tbFileExtensionOutput += sdCard.FileExtensions[i];
+
+                if(i+1 < sdCard.FileExtensions.Count)
+                {
+                    tbFileExtensionOutput += "; ";
+                }
+            }
+            TbFileExtension.Text = tbFileExtensionOutput;
             CheckTextBoxes();
         }
 
@@ -49,7 +63,7 @@ namespace SDCardCopier
             
             if(createNewSdCard)
             {
-                sdCard = new SdCard(DateTime.Now, TbName.Text, TbSdCardDirectory.Text, TbCopyDirectory.Text);
+                sdCard = new SdCard(TbName.Text, TbSdCardDirectory.Text, TbCopyDirectory.Text, fileExtensions);
                 SdCardManager.sdCards.Add(sdCard);
                 Close();
             }
@@ -58,6 +72,8 @@ namespace SDCardCopier
                 sdCard.Name = TbName.Text;
                 sdCard.SdCardDirectoryString = TbSdCardDirectory.Text;
                 sdCard.CopyDirectoryString = TbCopyDirectory.Text;
+                sdCard.FileExtensions = fileExtensions;
+                SdCardManager.Save();
                 Close();
             }
             
@@ -121,13 +137,74 @@ namespace SDCardCopier
 
         private void CheckTextBoxes()
         {
-            if(Directory.Exists(TbSdCardDirectory.Text) && Directory.Exists(TbCopyDirectory.Text) && !String.IsNullOrEmpty(TbName.Text))
+            if(Directory.Exists(TbSdCardDirectory.Text) && Directory.Exists(TbCopyDirectory.Text) && !String.IsNullOrEmpty(TbName.Text) && fileExtinsionsCorrect)
             {
                 BtnSave.IsEnabled = true;
             }
             else
             {
                 BtnSave.IsEnabled = false;
+            }
+        }
+
+        private void TbFileExtensionTextChanged(object sender, TextChangedEventArgs e = null)
+        {           
+            TextBox textBox = sender as TextBox;
+            string fileExtension = "";
+            bool fileExtensionHasDot = false;
+            bool foundSemiColon = false;
+            fileExtensions.Clear();
+
+            bool CheckFileExtension()
+            {
+                if (!fileExtensionHasDot)
+                {
+                    textBox.Foreground = new SolidColorBrush(Colors.Red);
+                    fileExtinsionsCorrect = false;
+                    CheckTextBoxes();
+                    return false;
+                }
+
+                fileExtensions.Add(fileExtension);
+                fileExtension = "";
+
+                return true;
+            }
+
+            foreach (char letter in textBox.Text)
+            {
+                if (letter == ' ')
+                    continue;
+                
+                if(letter == ';')
+                {
+                    foundSemiColon = true;
+                    if (!CheckFileExtension())
+                        return;
+                    fileExtensionHasDot = false;
+                }
+                else if(letter == '.')
+                {
+                    if(!fileExtensionHasDot && fileExtension.Length > 0)
+                    {
+                        textBox.Foreground = new SolidColorBrush(Colors.Red);
+                        fileExtinsionsCorrect = false;
+                        CheckTextBoxes();
+                        return;
+                    }
+                    fileExtension += letter;
+                    fileExtensionHasDot = true;
+                }
+                else
+                {
+                    fileExtension += letter;
+                }
+            }
+            if(CheckFileExtension())
+            {
+                textBox.Foreground = new SolidColorBrush(Colors.Black);
+                fileExtinsionsCorrect = true;
+                CheckTextBoxes();
             }
         }
 
