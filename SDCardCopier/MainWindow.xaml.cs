@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,20 +23,73 @@ namespace SDCardCopier
     /// </summary>
     public partial class MainWindow : Window
     {
-        
+
+        ManagementEventWatcher usbWatcher;
+
+        private bool appHidden = false;
+        public bool AppHidden
+        {
+            get { return appHidden; }
+            set
+            {
+                if (value)
+                {
+                    foreach (Window window in Application.Current.Windows)
+                    {
+                        if (window is MainWindow)
+                        {
+                            Hide();
+                        }
+                        else
+                        {
+                            window.Close();
+                        }
+                    }
+                }
+                else if (appHidden != value)
+                {
+                    SdCardManager.SortSdCards();
+                    Show();
+                    WindowState = WindowState.Normal;
+                    Activate();
+                }
+                appHidden = value;
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
+
+            usbWatcher = new ManagementEventWatcher();
+            WqlEventQuery query = new WqlEventQuery("Win32_VolumeChangeEvent");
+            usbWatcher.Query = query;
+            usbWatcher.EventArrived += UsbWatcher_EventArrived;
+            usbWatcher.Start();
+
+            SdCardManager.SortSdCards();
             sd_card_viewer.ItemsSource = SdCardManager.sdCards;
+        }
+
+        private void UsbWatcher_EventArrived(object sender, EventArrivedEventArgs e)
+        {
+            Dispatcher.Invoke(new Action(new Action(() =>
+            {
+                AppHidden = false;
+
+                foreach (SdCard sdCard in SdCardManager.sdCards)
+                {
+                    sdCard.UpdateSdCardIsConnected();
+                }
+                SdCardManager.SortSdCards();
+            })));
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
-            (Application.Current as App).AppHidden = true;
+            AppHidden = true;
         }
-
-        
 
         private void ShowSdCardWindow(SdCard sdCard = null)
         {

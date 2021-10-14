@@ -8,7 +8,7 @@ using System.Windows;
 namespace SDCardCopier
 {
     [Serializable]
-    public class SdCard : DependencyObject
+    public class SdCard : DependencyObject, IComparable
     {
         public static readonly DependencyProperty NameProperty = DependencyProperty.Register("Name", typeof(string), typeof(SdCard));
 
@@ -66,7 +66,6 @@ namespace SDCardCopier
             set 
             { 
                 SdCardDirectory = new DirectoryInfo(value); 
-                UpdateSdCardIsConnected();
             }
         }
 
@@ -145,7 +144,7 @@ namespace SDCardCopier
             if(drive.IsReady)
             {
                 SdCardIsConnected = true;
-                MessageBox.Show($"Drive: {drive.Name}\nIs Ready: {drive.IsReady}\nDriveFormat: {drive.DriveFormat}\nDriveType: {drive.DriveType}");
+                //MessageBox.Show($"Drive: {drive.Name}\nIs Ready: {drive.IsReady}\nDriveFormat: {drive.DriveFormat}\nDriveType: {drive.DriveType}");
             }
             else
             {
@@ -156,9 +155,23 @@ namespace SDCardCopier
 
         public void CopyFiles()
         {
-
             LastTimeOfCopy = DateTime.Now;
         }
 
+        public int CompareTo(object obj)
+        {
+            SdCard CompareSdCard = obj as SdCard;
+
+            if(CompareSdCard.SdCardIsConnected == false && SdCardIsConnected == true)
+            {
+                return -1;
+            }
+            if(CompareSdCard.SdCardIsConnected == true && SdCardIsConnected == false)
+            {
+                return 1;
+            }
+
+            return 0;
+        }
     }
 }

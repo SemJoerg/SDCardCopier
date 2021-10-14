@@ -65,6 +65,7 @@ namespace SDCardCopier
             {
                 sdCard = new SdCard(TbName.Text, TbSdCardDirectory.Text, TbCopyDirectory.Text, fileExtensions);
                 SdCardManager.sdCards.Add(sdCard);
+                SdCardManager.Save();
                 Close();
             }
             else

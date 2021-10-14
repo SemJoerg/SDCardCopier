@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="icons\arrow.png" />
     <None Remove="icons\folder.png" />
     <None Remove="icons\settings.png" />
   </ItemGroup>
@@ -18,6 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="icons\arrow.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="icons\folder.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
