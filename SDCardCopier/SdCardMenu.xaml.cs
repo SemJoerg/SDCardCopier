@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Collections.ObjectModel;
 
 namespace SDCardCopier
 {
@@ -28,6 +29,7 @@ namespace SDCardCopier
         {
             InitializeComponent();
             createNewSdCard = true;
+            TbFileExtension.Text = ".*";
             CheckTextBoxes();
         }
 
@@ -73,7 +75,7 @@ namespace SDCardCopier
                 sdCard.Name = TbName.Text;
                 sdCard.SdCardDirectoryString = TbSdCardDirectory.Text;
                 sdCard.CopyDirectoryString = TbCopyDirectory.Text;
-                sdCard.FileExtensions = fileExtensions;
+                sdCard.FileExtensions = new ObservableCollection<string>(fileExtensions);
                 SdCardManager.Save();
                 Close();
             }

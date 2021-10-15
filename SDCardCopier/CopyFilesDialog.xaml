@@ -1,0 +1,25 @@
+﻿<Window x:Class="SDCardCopier.CopyFilesDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SDCardCopier"
+        mc:Ignorable="d"
+        Title="CopyFilesDialog" Height="400" Width="500" WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow" Closing="Window_Closing">
+    <DockPanel LastChildFill="True">
+        <Grid DockPanel.Dock="Bottom" Margin="10,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Update Last Time Copied" IsEnabled="False"/>
+            <Button Grid.Column="2" Background="Gray" Content="Cancel" Click="BtnCloseWindow"/>
+        </Grid>
+        <Border DockPanel.Dock="Bottom" BorderThickness="2" BorderBrush="#003B65"/>
+        <ProgressBar x:Name="PBarCopyProgress" DockPanel.Dock="Bottom" Grid.Row="1" Margin="10" Height="25"/>
+        <ScrollViewer Padding="10,5">
+            <TextBlock x:Name="TBLog"/>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

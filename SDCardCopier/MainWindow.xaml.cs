@@ -117,6 +117,14 @@ namespace SDCardCopier
         {
             Button button = sender as Button;
             SdCard sdCard = button.DataContext as SdCard;
+
+            if (sdCard.fileCopyWorker.IsBusy)
+            {
+                MessageBox.Show("The SD-Card gets currently copied");
+                return;
+            }
+
+            
             ShowSdCardWindow(sdCard);
         }
 
@@ -130,11 +138,18 @@ namespace SDCardCopier
             if(result == MessageBoxResult.Yes)
             {
                 SdCardManager.sdCards.Remove(sdCard);
+                SdCardManager.Save();
             }
         }
 
-        
+        private void ItemCopySdCardClick(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            SdCard sdCard = button.DataContext as SdCard;
 
+            sdCard.CopyFiles();
+        }
+        
         private void BtnSettingsClick(object sender, RoutedEventArgs e)
         {
             

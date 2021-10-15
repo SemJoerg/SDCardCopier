@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Serialization;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
+using System.ComponentModel;
 
 namespace SDCardCopier
 {
@@ -86,8 +88,8 @@ namespace SDCardCopier
             set { CopyDirectory = new DirectoryInfo(value); }
         }
 
-        private List<string> fileExtensions;
-        public List<string> FileExtensions
+        private ObservableCollection<string> fileExtensions;
+        public ObservableCollection<string> FileExtensions
         {
             get
             {
@@ -96,12 +98,7 @@ namespace SDCardCopier
             set
             {
                 fileExtensions = value;
-                string output = "";
-                foreach (string fileExtension in value)
-                {
-                    output += fileExtension + "  ";
-                }
-                FileExtensionsString = output;
+                UpdatedFileExtensions(null, null);
             }
         }
 
@@ -123,9 +120,17 @@ namespace SDCardCopier
             private set { SetValue(SdCardIsConnectedProperty, value); }
         }
 
-        public SdCard()
+        [XmlIgnore]
+        public readonly BackgroundWorker fileCopyWorker;
+
+        private SdCard()
         {
-            FileExtensions = new List<string>();
+            FileExtensions = new ObservableCollection<string>();
+            fileCopyWorker = new BackgroundWorker();
+            fileCopyWorker.DoWork += FileCopyWorker_DoWork;
+            fileCopyWorker.WorkerReportsProgress = true;
+            fileCopyWorker.WorkerSupportsCancellation = true;
+            FileExtensions.CollectionChanged += UpdatedFileExtensions;
         }
 
         public SdCard(string name, string sdCardDirectory, string copyDirectory, List<string> _fileExtensions)
@@ -134,10 +139,22 @@ namespace SDCardCopier
             Name = name;
             SdCardDirectory = new DirectoryInfo(sdCardDirectory);
             CopyDirectory = new DirectoryInfo(copyDirectory);
-            FileExtensions = _fileExtensions;
+            FileExtensions = new ObservableCollection<string>(_fileExtensions);
+            FileExtensions.CollectionChanged += UpdatedFileExtensions;
+            UpdatedFileExtensions(null, null);
             UpdateSdCardIsConnected();
         }
 
+        public void UpdatedFileExtensions(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            string output = "";
+            foreach (string fileExtension in FileExtensions)
+            {
+                output += fileExtension + "  ";
+            }
+            FileExtensionsString = output;
+        }
+        
         public void UpdateSdCardIsConnected()
         {
             DriveInfo drive = new DriveInfo(SdCardDirectory.FullName[0].ToString());
@@ -153,11 +170,7 @@ namespace SDCardCopier
             
         }
 
-        public void CopyFiles()
-        {
-            LastTimeOfCopy = DateTime.Now;
-        }
-
+        // Used to Sort the List of SdCards properly
         public int CompareTo(object obj)
         {
             SdCard CompareSdCard = obj as SdCard;
@@ -172,6 +185,93 @@ namespace SDCardCopier
             }
 
             return 0;
+        }
+
+        public void CopyFiles()
+        {
+
+            if (!SdCardDirectory.Exists)
+            {
+                MessageBox.Show("The SD-Card Directory does not exist!");
+                return;
+            }
+            else if (!CopyDirectory.Exists)
+            {
+                MessageBox.Show("The Copy-To Directory does not exist!");
+                return;
+            }
+            else if (fileCopyWorker.IsBusy)
+            {
+                MessageBox.Show("The SD-Card gets currently copied");
+                return;
+            }
+
+            CopyFilesDialog copyFilesDialog = new CopyFilesDialog(this);
+            copyFilesDialog.Owner = Application.Current.MainWindow;
+            copyFilesDialog.Show();
+
+        }
+
+        private void FileCopyWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            List<FileInfo> files = new List<FileInfo>();
+            string[] directories = e.Argument as string[];
+            DirectoryInfo wSdDirecotry = new DirectoryInfo(directories[0]);
+            DirectoryInfo wCopyDirecotry = new DirectoryInfo(directories[1]);
+            bool allFileExtensionsAllowed = false;
+            foreach (string fileExtension in FileExtensions)
+            {
+                if (fileExtension == ".*")
+                {
+                    allFileExtensionsAllowed = true;
+                    break;
+                }
+            }
+
+            void GetAllFiles(DirectoryInfo directory)
+            {
+                foreach (DirectoryInfo subDirectory in directory.GetDirectories())
+                {
+                    GetAllFiles(subDirectory);
+                }
+
+                foreach (FileInfo file in directory.GetFiles())
+                {
+                    if(allFileExtensionsAllowed)
+                    {
+                        files.Add(file);
+                        fileCopyWorker.ReportProgress(0, $"Found File: {file.FullName}");
+                    }
+                    else
+                    {
+                        foreach (string fileExtension in FileExtensions)
+                        {
+                            if (Path.GetExtension(file.FullName) == fileExtension)
+                            {
+                                files.Add(file);
+                                fileCopyWorker.ReportProgress(0, $"Found File: {file.FullName}");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            fileCopyWorker.ReportProgress(0, $"SD-Directory: {wSdDirecotry.FullName}\n");
+            GetAllFiles(wSdDirecotry);
+            fileCopyWorker.ReportProgress(0, "\n");
+            fileCopyWorker.ReportProgress(0, files.Count);
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                fileCopyWorker.ReportProgress(i + 1);
+                if (fileCopyWorker.CancellationPending)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                System.Threading.Thread.Sleep(2000);
+            }
         }
     }
 }

@@ -48,7 +48,7 @@
 
                                     <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Foreground="Red" FontWeight="Bold" Content="X" Click="ItemDeleteClick" Margin="0,0,0,5"/>
                                     <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Foreground="Black" Content="E" Click="ItemEditClick" Margin="0,0,0,5"/>
-                                    <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" IsEnabled="{Binding Path=SdCardIsConnected}">
+                                    <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" IsEnabled="{Binding Path=SdCardIsConnected}" Click="ItemCopySdCardClick">
                                         <Image Source="/icons/arrow.png"/>
                                     </Button>
                                 </StackPanel>
