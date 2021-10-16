@@ -58,6 +58,7 @@ namespace SDCardCopier
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Owner.IsEnabled = true;
+            Owner = null;
         }
 
         private void BtnSaveClick(object sender, RoutedEventArgs e)
@@ -210,6 +211,5 @@ namespace SDCardCopier
                 CheckTextBoxes();
             }
         }
-
     }
 }

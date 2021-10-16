@@ -219,17 +219,28 @@ namespace SDCardCopier
             DirectoryInfo wSdDirecotry = new DirectoryInfo(directories[0]);
             DirectoryInfo wCopyDirecotry = new DirectoryInfo(directories[1]);
             bool allFileExtensionsAllowed = false;
-            foreach (string fileExtension in FileExtensions)
+            int progress = 0;
+
+            void AddLogEntry(object message, LogType logType = LogType.Default)
             {
-                if (fileExtension == ".*")
+                fileCopyWorker.ReportProgress(progress, new object[] { message.ToString(), logType });
+            }
+
+            bool CheckForCancellation()
+            {
+                if (fileCopyWorker.CancellationPending)
                 {
-                    allFileExtensionsAllowed = true;
-                    break;
+                    e.Cancel = true;
+                    return true;
                 }
+                return false;
             }
 
             void GetAllFiles(DirectoryInfo directory)
             {
+                if (CheckForCancellation())
+                    return;
+
                 foreach (DirectoryInfo subDirectory in directory.GetDirectories())
                 {
                     GetAllFiles(subDirectory);
@@ -237,10 +248,13 @@ namespace SDCardCopier
 
                 foreach (FileInfo file in directory.GetFiles())
                 {
-                    if(allFileExtensionsAllowed)
+                    if (CheckForCancellation())
+                        return;
+
+                    if (allFileExtensionsAllowed)
                     {
                         files.Add(file);
-                        fileCopyWorker.ReportProgress(0, $"Found File: {file.FullName}");
+                        AddLogEntry($"Found File: {file.FullName}");
                     }
                     else
                     {
@@ -249,7 +263,7 @@ namespace SDCardCopier
                             if (Path.GetExtension(file.FullName) == fileExtension)
                             {
                                 files.Add(file);
-                                fileCopyWorker.ReportProgress(0, $"Found File: {file.FullName}");
+                                AddLogEntry($"Found File: {file.FullName}");
                                 break;
                             }
                         }
@@ -257,20 +271,50 @@ namespace SDCardCopier
                 }
             }
 
-            fileCopyWorker.ReportProgress(0, $"SD-Directory: {wSdDirecotry.FullName}\n");
-            GetAllFiles(wSdDirecotry);
-            fileCopyWorker.ReportProgress(0, "\n");
-            fileCopyWorker.ReportProgress(0, files.Count);
-
-            for (int i = 0; i < files.Count; i++)
+            
+            try
             {
-                fileCopyWorker.ReportProgress(i + 1);
-                if (fileCopyWorker.CancellationPending)
+                foreach (string fileExtension in FileExtensions)
                 {
-                    e.Cancel = true;
-                    return;
+                    if (fileExtension == ".*")
+                    {
+                        allFileExtensionsAllowed = true;
+                        break;
+                    }
                 }
-                System.Threading.Thread.Sleep(2000);
+
+                GetAllFiles(wSdDirecotry);
+                fileCopyWorker.ReportProgress(progress, files.Count);
+
+
+                for (progress = 1; progress <= files.Count; progress++)
+                {
+                    if (CheckForCancellation())
+                        return;
+
+                    FileInfo file = files[progress - 1];
+                    string newFilePath = file.FullName.Replace(wSdDirecotry.FullName, wCopyDirecotry.FullName);
+                    string newDirectory = newFilePath.Replace(file.Name, null);
+                    if (!Directory.Exists(newDirectory))
+                    {
+                        Directory.CreateDirectory(newDirectory);
+                    }
+                    if (File.Exists(newFilePath))
+                    {
+                        AddLogEntry($"The File '{newFilePath}' does already exist", LogType.Warning);
+                    }
+                    else
+                    {
+                        file.CopyTo(newFilePath);
+                        AddLogEntry($"Copied {file.FullName} to {newFilePath}");
+                    }
+                    System.Threading.Thread.Sleep(500);
+                }
+            }
+            catch (Exception ex)
+            {
+                e.Cancel = true;
+                AddLogEntry(ex, LogType.Error);
             }
         }
     }

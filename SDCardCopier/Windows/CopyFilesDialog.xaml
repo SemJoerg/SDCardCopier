@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDCardCopier"
         mc:Ignorable="d"
-        Title="CopyFilesDialog" Height="400" Width="500" WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow" Closing="Window_Closing">
+        Title="CopyFilesDialog" Height="400" Width="750" MinHeight="200" MinWidth="400" WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow" Closing="Window_Closing">
     <DockPanel LastChildFill="True">
         <Grid DockPanel.Dock="Bottom" Margin="10,5">
             <Grid.ColumnDefinitions>
@@ -17,9 +17,21 @@
             <Button Grid.Column="2" Background="Gray" Content="Cancel" Click="BtnCloseWindow"/>
         </Grid>
         <Border DockPanel.Dock="Bottom" BorderThickness="2" BorderBrush="#003B65"/>
-        <ProgressBar x:Name="PBarCopyProgress" DockPanel.Dock="Bottom" Grid.Row="1" Margin="10" Height="25"/>
+        <Grid DockPanel.Dock="Bottom">
+            <ProgressBar x:Name="PBarCopyProgress" Margin="10" Height="25"/>
+            <TextBlock x:Name="TBStatus" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold" FontSize="16"/>
+        </Grid>
         <ScrollViewer Padding="10,5">
-            <TextBlock x:Name="TBLog"/>
+            <ItemsControl x:Name="logViewer">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="0,0,0,5">
+                            <TextBlock DockPanel.Dock="Left" Foreground="{Binding Path=LogColor}" Text="{Binding Path=TimeStamp}"/>
+                            <TextBlock Margin="5,0,0,0" TextWrapping="Wrap" Foreground="{Binding Path=LogColor}" Text="{Binding Path=Message}"/>
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollViewer>
     </DockPanel>
 </Window>
