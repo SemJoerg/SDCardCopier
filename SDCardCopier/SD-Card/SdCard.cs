@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace SDCardCopier
 {
@@ -22,11 +23,12 @@ namespace SDCardCopier
 
         public static readonly DependencyProperty LastTimeOfCopyProperty = DependencyProperty.Register("LastTimeOfCopy", typeof(DateTime), typeof(SdCard));
 
+
         [XmlIgnore]
         public DateTime LastTimeOfCopy 
         {   
             get { return (DateTime)GetValue(LastTimeOfCopyProperty); }
-            private set { SetValue(LastTimeOfCopyProperty, value); }
+            set { SetValue(LastTimeOfCopyProperty, value); }
         }
 
         static private string timeFormat = "dd.MM.yyyy HH:mm:ss";
@@ -56,7 +58,15 @@ namespace SDCardCopier
             get { return (DirectoryInfo)GetValue(SdCardDirectoryProperty); }
             private set
             { 
-                SetValue(SdCardDirectoryProperty, value);
+                if(!value.FullName.EndsWith("\\"))
+                {
+                    SetValue(SdCardDirectoryProperty, new DirectoryInfo(value.FullName + "\\"));
+                }
+                else
+                {
+                    SetValue(SdCardDirectoryProperty, value);
+                }
+                
                 UpdateSdCardIsConnected();
             }
         }
@@ -78,7 +88,17 @@ namespace SDCardCopier
         public DirectoryInfo CopyDirectory
         {
             get { return (DirectoryInfo)GetValue(CopyDirectoryProperty); }
-            private set { SetValue(CopyDirectoryProperty, value); }
+            private set 
+            {
+                if (!value.FullName.EndsWith("\\"))
+                {
+                    SetValue(CopyDirectoryProperty, new DirectoryInfo(value.FullName + "\\"));
+                }
+                else
+                {
+                    SetValue(CopyDirectoryProperty, value);
+                }
+            }
         }
 
         [XmlElement("CopyDirectory")]
@@ -123,24 +143,25 @@ namespace SDCardCopier
         [XmlIgnore]
         public readonly BackgroundWorker fileCopyWorker;
 
+        //Constructor for XML Serilisation
         private SdCard()
         {
             FileExtensions = new ObservableCollection<string>();
+            FileExtensions.CollectionChanged += UpdatedFileExtensions;
             fileCopyWorker = new BackgroundWorker();
             fileCopyWorker.DoWork += FileCopyWorker_DoWork;
             fileCopyWorker.WorkerReportsProgress = true;
             fileCopyWorker.WorkerSupportsCancellation = true;
-            FileExtensions.CollectionChanged += UpdatedFileExtensions;
         }
 
-        public SdCard(string name, string sdCardDirectory, string copyDirectory, List<string> _fileExtensions)
+        public SdCard(string name, string sdCardDirectory, string copyDirectory, List<string> _fileExtensions, DateTime lastTimeOfCopy) : this()
         {
-            LastTimeOfCopy = DateTime.Now;
             Name = name;
             SdCardDirectory = new DirectoryInfo(sdCardDirectory);
             CopyDirectory = new DirectoryInfo(copyDirectory);
             FileExtensions = new ObservableCollection<string>(_fileExtensions);
             FileExtensions.CollectionChanged += UpdatedFileExtensions;
+            LastTimeOfCopy = lastTimeOfCopy;
             UpdatedFileExtensions(null, null);
             UpdateSdCardIsConnected();
         }
@@ -158,7 +179,7 @@ namespace SDCardCopier
         public void UpdateSdCardIsConnected()
         {
             DriveInfo drive = new DriveInfo(SdCardDirectory.FullName[0].ToString());
-            if(drive.IsReady)
+            if (drive.IsReady)
             {
                 SdCardIsConnected = true;
                 //MessageBox.Show($"Drive: {drive.Name}\nIs Ready: {drive.IsReady}\nDriveFormat: {drive.DriveFormat}\nDriveType: {drive.DriveType}");
@@ -167,7 +188,6 @@ namespace SDCardCopier
             {
                 SdCardIsConnected = false;
             }
-            
         }
 
         // Used to Sort the List of SdCards properly
@@ -197,32 +217,42 @@ namespace SDCardCopier
             }
             else if (!CopyDirectory.Exists)
             {
-                MessageBox.Show("The Copy-To Directory does not exist!");
+                MessageBox.Show("The Copy Directory does not exist!");
                 return;
             }
             else if (fileCopyWorker.IsBusy)
             {
-                MessageBox.Show("The SD-Card gets currently copied");
+                MessageBox.Show("The SD-Card gets currently copied!");
                 return;
             }
 
             CopyFilesDialog copyFilesDialog = new CopyFilesDialog(this);
             copyFilesDialog.Owner = Application.Current.MainWindow;
             copyFilesDialog.Show();
-
         }
 
         private void FileCopyWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             List<FileInfo> files = new List<FileInfo>();
-            string[] directories = e.Argument as string[];
-            DirectoryInfo wSdDirecotry = new DirectoryInfo(directories[0]);
-            DirectoryInfo wCopyDirecotry = new DirectoryInfo(directories[1]);
+            object[] args = e.Argument as object[];
+            DirectoryInfo wSdDirecotry = new DirectoryInfo(args[0].ToString());
+            DirectoryInfo wCopyDirecotry = new DirectoryInfo(args[1].ToString());
+            DateTime wLastTimeOfCopy = Convert.ToDateTime(args[2]);
+
             bool allFileExtensionsAllowed = false;
+            int oldFilesCounter = 0;
             int progress = 0;
+
+            int warnigsCounter = 0;
+            int succsesfulCopiedFilesCounter = 0;
 
             void AddLogEntry(object message, LogType logType = LogType.Default)
             {
+                if(LogType.Warning == logType)
+                {
+                    warnigsCounter++;
+                }
+
                 fileCopyWorker.ReportProgress(progress, new object[] { message.ToString(), logType });
             }
 
@@ -234,6 +264,20 @@ namespace SDCardCopier
                     return true;
                 }
                 return false;
+            }
+
+            void AddFile(FileInfo file)
+            {
+                if(file.CreationTime >= wLastTimeOfCopy)
+                {
+                    files.Add(file);
+                    //AddLogEntry($"Found File: {file.FullName}\nCreationDate: {file.CreationTime.ToString("dd.MM.yyyy HH:mm:ss")}");
+                }
+                else
+                {
+                    oldFilesCounter++;
+                    //AddLogEntry($"Found old File: {file.FullName}\nCreationDate: {file.CreationTime.ToString("dd.MM.yyyy HH:mm:ss")}");
+                }
             }
 
             void GetAllFiles(DirectoryInfo directory)
@@ -253,8 +297,7 @@ namespace SDCardCopier
 
                     if (allFileExtensionsAllowed)
                     {
-                        files.Add(file);
-                        AddLogEntry($"Found File: {file.FullName}");
+                        AddFile(file);
                     }
                     else
                     {
@@ -262,8 +305,7 @@ namespace SDCardCopier
                         {
                             if (Path.GetExtension(file.FullName) == fileExtension)
                             {
-                                files.Add(file);
-                                AddLogEntry($"Found File: {file.FullName}");
+                                AddFile(file);
                                 break;
                             }
                         }
@@ -285,6 +327,8 @@ namespace SDCardCopier
 
                 GetAllFiles(wSdDirecotry);
                 fileCopyWorker.ReportProgress(progress, files.Count);
+                AddLogEntry($"Found {oldFilesCounter} old files");
+                AddLogEntry($"Found {files.Count} new files");
 
 
                 for (progress = 1; progress <= files.Count; progress++)
@@ -293,22 +337,24 @@ namespace SDCardCopier
                         return;
 
                     FileInfo file = files[progress - 1];
-                    string newFilePath = file.FullName.Replace(wSdDirecotry.FullName, wCopyDirecotry.FullName);
-                    string newDirectory = newFilePath.Replace(file.Name, null);
+                    string newFilePath = file.FullName.Substring(wSdDirecotry.FullName.Length);
+                    newFilePath = newFilePath.Insert(0, wCopyDirecotry.FullName);
+                    string newDirectory = newFilePath.Substring(0, newFilePath.Length - file.Name.Length);
+
                     if (!Directory.Exists(newDirectory))
                     {
                         Directory.CreateDirectory(newDirectory);
                     }
                     if (File.Exists(newFilePath))
                     {
-                        AddLogEntry($"The File '{newFilePath}' does already exist", LogType.Warning);
+                        AddLogEntry($"The File \"{newFilePath}\" does already exist", LogType.Warning);
                     }
                     else
                     {
                         file.CopyTo(newFilePath);
-                        AddLogEntry($"Copied {file.FullName} to {newFilePath}");
+                        succsesfulCopiedFilesCounter++;
+                        AddLogEntry($"Copied \"{file.FullName}\"\nto \"{newFilePath}\"");
                     }
-                    System.Threading.Thread.Sleep(500);
                 }
             }
             catch (Exception ex)
@@ -316,6 +362,10 @@ namespace SDCardCopier
                 e.Cancel = true;
                 AddLogEntry(ex, LogType.Error);
             }
+
+            AddLogEntry($"{warnigsCounter} Warnigs");
+            AddLogEntry($"Copied {succsesfulCopiedFilesCounter} out of {files.Count} files sucsessfully");
+
         }
     }
 }

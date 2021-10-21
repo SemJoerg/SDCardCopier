@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDCardCopier"
         mc:Ignorable="d"
-        Title="SdCardMenu" Height="300" Width="500" MinWidth="500" MinHeight="300" 
+        Title="SdCardMenu" Height="350" Width="600" MinWidth="500" MinHeight="350" 
         WindowStyle="ToolWindow" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
     <DockPanel LastChildFill="True">
         <Grid DockPanel.Dock="Bottom" Margin="10,5">
@@ -45,12 +45,14 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="Name"/>
             <TextBlock Grid.Row="1" Text="SD-Card Folder"/>
             <TextBlock Grid.Row="2" Text="Copy Directory"/>
-            <TextBlock Grid.Row="3" Text="File Extension"/>
+            <TextBlock Grid.Row="3" Text="File Extensions"/>
+            <TextBlock Grid.Row="4" Text="Last Time Of Copy"/>
 
             <TextBox x:Name="TbName" Grid.Row="0" Grid.Column="2" TextChanged="TbNameTextChanged"/>
 
@@ -65,6 +67,8 @@
             <TextBox x:Name="TbCopyDirectory" Grid.Row="2" Grid.Column="2" TextChanged="TbFolderTextChanged"/>
 
             <TextBox x:Name="TbFileExtension" Grid.Row="3" Grid.Column="2" TextChanged="TbFileExtensionTextChanged"/>
+
+            <TextBox x:Name="TbLastTimeOfCopy" Grid.Row="4" Grid.Column="2" TextChanged="TbLastTimeOfCopyTextChanged"/>
 
         </Grid>
     </DockPanel>

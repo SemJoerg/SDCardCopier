@@ -24,12 +24,15 @@ namespace SDCardCopier
         private bool createNewSdCard;
         private bool fileExtinsionsCorrect = false;
         List<string> fileExtensions = new List<string>();
+        private bool dateTimeCorrect;
+        private DateTime newLastTimeOfCopy;
 
         public SdCardMenu()
         {
             InitializeComponent();
             createNewSdCard = true;
             TbFileExtension.Text = ".*";
+            TbLastTimeOfCopy.Text = DateTime.MinValue.ToString();
             CheckTextBoxes();
         }
 
@@ -52,6 +55,7 @@ namespace SDCardCopier
                 }
             }
             TbFileExtension.Text = tbFileExtensionOutput;
+            TbLastTimeOfCopy.Text = sdCard.LastTimeOfCopy.ToString();
             CheckTextBoxes();
         }
 
@@ -66,7 +70,7 @@ namespace SDCardCopier
             
             if(createNewSdCard)
             {
-                sdCard = new SdCard(TbName.Text, TbSdCardDirectory.Text, TbCopyDirectory.Text, fileExtensions);
+                sdCard = new SdCard(TbName.Text, TbSdCardDirectory.Text, TbCopyDirectory.Text, fileExtensions, newLastTimeOfCopy);
                 SdCardManager.sdCards.Add(sdCard);
                 SdCardManager.Save();
                 Close();
@@ -77,6 +81,7 @@ namespace SDCardCopier
                 sdCard.SdCardDirectoryString = TbSdCardDirectory.Text;
                 sdCard.CopyDirectoryString = TbCopyDirectory.Text;
                 sdCard.FileExtensions = new ObservableCollection<string>(fileExtensions);
+                sdCard.LastTimeOfCopy = newLastTimeOfCopy;
                 SdCardManager.Save();
                 Close();
             }
@@ -141,7 +146,7 @@ namespace SDCardCopier
 
         private void CheckTextBoxes()
         {
-            if(Directory.Exists(TbSdCardDirectory.Text) && Directory.Exists(TbCopyDirectory.Text) && !String.IsNullOrEmpty(TbName.Text) && fileExtinsionsCorrect)
+            if(Directory.Exists(TbSdCardDirectory.Text) && Directory.Exists(TbCopyDirectory.Text) && !String.IsNullOrEmpty(TbName.Text) && fileExtinsionsCorrect && dateTimeCorrect)
             {
                 BtnSave.IsEnabled = true;
             }
@@ -210,6 +215,24 @@ namespace SDCardCopier
                 fileExtinsionsCorrect = true;
                 CheckTextBoxes();
             }
+        }
+
+        private void TbLastTimeOfCopyTextChanged(object sender, TextChangedEventArgs e = null)
+        {
+            TextBox textBox = sender as TextBox;
+
+
+            if (DateTime.TryParse(textBox.Text, out newLastTimeOfCopy))
+            {
+                textBox.Foreground = new SolidColorBrush(Colors.Black);
+                dateTimeCorrect = true;
+            }
+            else
+            {
+                textBox.Foreground = new SolidColorBrush(Colors.Red);
+                dateTimeCorrect = false;
+            }
+            CheckTextBoxes();
         }
     }
 }

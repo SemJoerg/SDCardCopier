@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDCardCopier"
         mc:Ignorable="d"
-        Title="SDCardCopier" Height="450" Width="800" MinHeight="200" MinWidth="400" WindowStartupLocation="CenterScreen" Closing="Window_Closing">
+        Title="SDCardCopier" Height="475" Width="800" MinHeight="350" MinWidth="400" WindowStartupLocation="CenterScreen" Closing="Window_Closing">
 
     <DockPanel LastChildFill="True">
         <Grid DockPanel.Dock="Top" Margin="10,2,10,2">
@@ -65,7 +65,7 @@
                                 <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding Path=FileExtensionsString}"/>
 
                                 <TextBlock Grid.Column="0" Grid.Row="4" Text="Last time of copy" FontSize="13" FontWeight="SemiBold" FontStyle="Italic"/>
-                                <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding Path=lastTimeOfCopyString}" FontSize="13" FontStyle="Italic"/>
+                                <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding Path=LastTimeOfCopy, StringFormat={}{0:dd.MM.yyyy HH:mm:ss}}" FontSize="13" FontStyle="Italic"/>
                                 
                                 
                             </Grid>

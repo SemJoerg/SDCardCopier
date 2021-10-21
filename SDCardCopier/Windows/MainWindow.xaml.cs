@@ -24,7 +24,8 @@ namespace SDCardCopier
     public partial class MainWindow : Window
     {
 
-        ManagementEventWatcher usbWatcher;
+        ManagementEventWatcher usbInsertedWatcher;
+        ManagementEventWatcher usbChangedWatcher;
 
         private bool appHidden = false;
         public bool AppHidden
@@ -34,8 +35,9 @@ namespace SDCardCopier
             {
                 if (value)
                 {
-                    foreach (Window window in Application.Current.Windows)
+                    for (int i = 0; i <Application.Current.Windows.Count; i++)
                     {
+                        Window window = Application.Current.Windows[i];
                         if (window is MainWindow)
                         {
                             Hide();
@@ -45,10 +47,16 @@ namespace SDCardCopier
                             window.Close();
                         }
                     }
+                    SdCardManager.Save();
+                    //SdCardManager.sdCards = null;
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
                 }
                 else if (appHidden != value)
                 {
-                    SdCardManager.SortSdCards();
+                    //SdCardManager.Load();
+                    //SdCardManager.SortSdCards();
                     Show();
                     WindowState = WindowState.Normal;
                     Activate();
@@ -61,28 +69,47 @@ namespace SDCardCopier
         {
             InitializeComponent();
 
-            usbWatcher = new ManagementEventWatcher();
-            WqlEventQuery query = new WqlEventQuery("Win32_VolumeChangeEvent");
-            usbWatcher.Query = query;
-            usbWatcher.EventArrived += UsbWatcher_EventArrived;
-            usbWatcher.Start();
+            usbInsertedWatcher = new ManagementEventWatcher();
+            WqlEventQuery insertedQuery = new WqlEventQuery("SELECT * FROM __InstanceCreationEvent WITHIN 2 WHERE TargetInstance ISA 'Win32_USBHub'");
+            usbInsertedWatcher.Query = insertedQuery;
+            usbInsertedWatcher.EventArrived += UsbInsertedWatcher_EventArrived;
+            
+            usbChangedWatcher = new ManagementEventWatcher();
+            WqlEventQuery changedQuery = new WqlEventQuery("Win32_VolumeChangeEvent");
+            usbChangedWatcher.Query = changedQuery;
+            usbChangedWatcher.EventArrived += UsbChangedWatcher_EventArrived;
+
+            usbInsertedWatcher.Start();
+            usbChangedWatcher.Start();
 
             SdCardManager.SortSdCards();
             sd_card_viewer.ItemsSource = SdCardManager.sdCards;
         }
 
-        private void UsbWatcher_EventArrived(object sender, EventArrivedEventArgs e)
+        private void UpdateAndSortSdCards()
         {
-            Dispatcher.Invoke(new Action(new Action(() =>
+            foreach (SdCard sdCard in SdCardManager.sdCards)
+            {
+                sdCard.UpdateSdCardIsConnected();
+            }
+            SdCardManager.SortSdCards();
+        }
+
+        private void UsbInsertedWatcher_EventArrived(object sender, EventArrivedEventArgs e)
+        {
+            Dispatcher.Invoke(new Action(() =>
             {
                 AppHidden = false;
-
-                foreach (SdCard sdCard in SdCardManager.sdCards)
-                {
-                    sdCard.UpdateSdCardIsConnected();
-                }
-                SdCardManager.SortSdCards();
-            })));
+            }));
+        }
+        
+        private void UsbChangedWatcher_EventArrived(object sender, EventArrivedEventArgs e)
+        {
+            
+            Dispatcher.Invoke(new Action(() =>
+            {
+                UpdateAndSortSdCards();
+            }));
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -147,7 +174,13 @@ namespace SDCardCopier
             Button button = sender as Button;
             SdCard sdCard = button.DataContext as SdCard;
 
-            sdCard.CopyFiles();
+            MessageBoxResult result = MessageBox.Show(this, $"Do you want to Copy new files from \"{sdCard.SdCardDirectory.FullName}\" " +
+                $"to \"{sdCard.CopyDirectory.FullName}\"", $"Copy SD-Card: {sdCard.Name}", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                sdCard.CopyFiles();
+            }
         }
         
         private void BtnSettingsClick(object sender, RoutedEventArgs e)

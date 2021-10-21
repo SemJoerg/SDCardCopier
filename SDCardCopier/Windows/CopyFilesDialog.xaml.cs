@@ -38,7 +38,7 @@ namespace SDCardCopier
 
         private void CopyFilesDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            string[] directories = new string[] { sdCard.SdCardDirectoryString, sdCard.CopyDirectoryString };
+            object[] directories = new object[] { sdCard.SdCardDirectoryString, sdCard.CopyDirectoryString, sdCard.LastTimeOfCopy };
             sdCard.fileCopyWorker.RunWorkerAsync(argument: directories);
         }
 
@@ -51,6 +51,7 @@ namespace SDCardCopier
             else
             {
                 TBStatus.Text = "successful".ToUpper();
+                BtnUpdateLastTimeCopied.IsEnabled = true;
             }
 
             sdCard.fileCopyWorker.ProgressChanged -= FileCopyWorker_ProgressChanged;
@@ -64,7 +65,6 @@ namespace SDCardCopier
                 if (e.UserState is int)
                 {
                     PBarCopyProgress.Maximum = Convert.ToInt32(e.UserState);
-                    logCollection.Add(new LogEntry($"Found {Convert.ToInt32(e.UserState)} new files\n"));
                 }
                 else if (e.UserState is object[])
                 {
@@ -79,7 +79,7 @@ namespace SDCardCopier
                     logCollection.Add(new LogEntry((string)e.UserState));
                 }
             }
-            
+            SVLog.ScrollToBottom();
             PBarCopyProgress.Value = e.ProgressPercentage;
         }
 
@@ -97,10 +97,19 @@ namespace SDCardCopier
             }
             sdCard.fileCopyWorker.CancelAsync();
             Owner = null;
+            logCollection.Clear();
+            logCollection = null;
         }
 
         private void BtnCloseWindow(object sender, RoutedEventArgs e)
         {
+            Close();
+        }
+
+        private void BtnUpdateLastTimeCopiedClick(object sender, RoutedEventArgs e)
+        {
+            sdCard.LastTimeOfCopy = DateTime.Now;
+            SdCardManager.Save();
             Close();
         }
     }
@@ -123,7 +132,8 @@ namespace SDCardCopier
         {
             Message = message;
             Type = logType;
-            TimeStamp = DateTime.Now.ToString("[HH:mm:ss]");
+            //TimeStamp = DateTime.Now.ToString("[HH:mm:ss]");
+            TimeStamp = "[" + DateTime.Now.ToLongTimeString() + "]";
 
             if(logType == LogType.Warning)
             {
