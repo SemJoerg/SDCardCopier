@@ -1,12 +1,10 @@
 ﻿using System;
-using System.IO;
-using System.Xml.Serialization;
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Threading.Tasks;
+using System.IO;
+using System.Windows;
+using System.Xml.Serialization;
 
 namespace SDCardCopier
 {
@@ -57,7 +55,7 @@ namespace SDCardCopier
         {
             get { return (DirectoryInfo)GetValue(SdCardDirectoryProperty); }
             private set
-            { 
+            {
                 if(!value.FullName.EndsWith("\\"))
                 {
                     SetValue(SdCardDirectoryProperty, new DirectoryInfo(value.FullName + "\\"));
@@ -178,7 +176,7 @@ namespace SDCardCopier
         
         public void UpdateSdCardIsConnected()
         {
-            DriveInfo drive = new DriveInfo(SdCardDirectory.FullName[0].ToString());
+            DriveInfo drive = new DriveInfo(SdCardDirectory.Root.FullName);
             if (drive.IsReady)
             {
                 SdCardIsConnected = true;

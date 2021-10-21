@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Management;
 using Forms = System.Windows.Forms;
-using System.Runtime.InteropServices;
-using System.Collections.Specialized;
-using System.ComponentModel;
 
 namespace SDCardCopier
 {

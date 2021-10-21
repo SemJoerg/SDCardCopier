@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Xml.Serialization;
-using System.IO;
-using System.Text;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
-using System.Management;
+using System.Xml.Serialization;
 
 namespace SDCardCopier
 {
