@@ -88,6 +88,8 @@ namespace SDCardCopier
                 }
             }
             sdCard.fileCopyWorker.CancelAsync();
+            sdCard.fileCopyWorker.ProgressChanged -= FileCopyWorker_ProgressChanged;
+            sdCard.fileCopyWorker.RunWorkerCompleted -= FileCopyWorker_RunWorkerCompleted;
             Owner = null;
             logCollection.Clear();
             logCollection = null;
